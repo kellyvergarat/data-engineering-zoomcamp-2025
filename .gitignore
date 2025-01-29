@@ -1,0 +1,5 @@
+#do not include the folder ny_taxi_postgres_data in the git repository
+# do not include the folder ny_taxi_postgres_data in the git repository
+ny_taxi_postgres_data/
+
+*.csv
