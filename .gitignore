@@ -6,3 +6,8 @@ ny_taxi_postgres_data/
 *.zip
 *.parquet
 *.gz
+*.db
+
+#ignore local db files
+data_pgadmin/
+ny_taxi_postgres_data/
