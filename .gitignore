@@ -8,6 +8,9 @@ ny_taxi_postgres_data/
 *.gz
 *.db
 
+*key.json
+
 #ignore local db files
 data_pgadmin/
 ny_taxi_postgres_data/
+dbt_code
