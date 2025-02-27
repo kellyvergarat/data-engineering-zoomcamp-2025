@@ -168,7 +168,44 @@ Considering the YoY Growth in 2020, which were the yearly quarters with the best
 - green: {best: 2020/Q1, worst: 2020/Q2}, yellow: {best: 2020/Q1, worst: 2020/Q2}
 - green: {best: 2020/Q1, worst: 2020/Q2}, yellow: {best: 2020/Q3, worst: 2020/Q4}
 
-Answer: green: {best: 2020/Q1, worst: 2020/Q2}, yellow: {best: 2020/Q1, worst: 2020/Q2}
+Answer - green: {best: 2020/Q1, worst: 2020/Q2}, yellow: {best: 2020/Q1, worst: 2020/Q2}
+
+```sql
+-- Specifies that the result of this query will be stored as a table in the database.
+{{
+  config(
+    materialized='table'
+  )
+}}
+
+-- Step 1: Compute the quarterly revenue for each year and service type
+WITH quarterly_revenue AS (
+  SELECT
+    pickup_year,  -- Extract year from datetime
+    pickup_quarter, -- Extract quarter from datetime
+    pickup_year_quarter, -- Create a formatted year/quarter string
+    service_type,  -- Identify the service type (Green/Yellow taxi)
+    SUM(total_amount) AS quarterly_revenue  -- Compute total revenue for each quarter
+  FROM {{ ref('fact_trips') }}  -- Use the taxi trips fact table
+  WHERE pickup_year IN (2019, 2020)  -- Ensure only data from 2019 and 2020 is used
+  GROUP BY 1, 2, 3, 4  -- Group by year, quarter, formatted year/quarter, and service type
+)
+-- Step 2: Compute the YoY growth by comparing each quarter to the previous year's same quarter
+SELECT 
+  q1.pickup_year,  -- Current year
+  q1.pickup_quarter,  -- Current quarter
+  q1.pickup_year_quarter,  -- Formatted year/quarter
+  q1.service_type,  -- Taxi service type
+  q1.quarterly_revenue,  -- Current quarter's revenue
+  q2.quarterly_revenue AS prev_quarterly_revenue, -- Previous year's same quarter revenue
+  -- Calculate the YoY growth percentage
+  ROUND(((q1.quarterly_revenue - q2.quarterly_revenue) / q2.quarterly_revenue) * 100, 2) AS yoy_growth
+FROM quarterly_revenue q1
+LEFT JOIN quarterly_revenue q2 
+  ON q1.service_type = q2.service_type  -- Match by service type
+  AND q1.pickup_year = q2.pickup_year + 1  -- Compare with the previous year's same quarter
+  AND q1.pickup_quarter = q2.pickup_quarter  -- Ensure it's the same quarter
+```
 
 
 ### Question 6: P97/P95/P90 Taxi Monthly Fare
@@ -185,6 +222,14 @@ Now, what are the values of `p97`, `p95`, `p90` for Green Taxi and Yellow Taxi, 
 - green: {p97: 40.0, p95: 33.0, p90: 24.5}, yellow: {p97: 31.5, p95: 25.5, p90: 19.0}
 - green: {p97: 55.0, p95: 45.0, p90: 26.5}, yellow: {p97: 52.0, p95: 25.5, p90: 19.0}
 
+Answer: green: {p97: 55.0, p95: 45.0, p90: 26.5}, yellow: {p97: 31.5, p95: 25.5, p90: 19.0}
+
+```sql
+SELECT * FROM `course-project-417213.trips_data_all.fct_taxi_trips_monthly_fare_p95` 
+WHERE month = 4 AND year = 2020
+```
+
+![alt text](image.png)
 
 ### Question 7: Top #Nth longest P90 travel time Location for FHV
 
@@ -205,6 +250,32 @@ For the Trips that **respectively** started from `Newark Airport`, `SoHo`, and `
 - LaGuardia Airport, Saint Albans, Howard Beach
 - LaGuardia Airport, Rosedale, Bath Beach
 - LaGuardia Airport, Yorkville East, Greenpoint
+
+Answer: LaGuardia Airport, Chinatown, Garment District
+
+```sql  
+WITH ranked_data AS (
+    SELECT 
+        pickup_zone,  -- The pickup zone for the trip.
+        dropoff_zone, -- The dropoff zone for the trip.
+        trip_duration_p90, -- The 90th percentile of trip duration for the month.
+        DENSE_RANK() OVER (PARTITION BY pickup_zone ORDER BY trip_duration_p90 DESC) AS rank
+        -- Assigns a dense rank to each dropoff zone within each pickup zone, based on trip_duration_p90 in descending order.
+        -- DENSE_RANK ensures that ranks are consecutive even if there are ties.
+    FROM `course-project-417213.trips_data_all.fct_fhv_monthly_zone_traveltime_p90`
+    -- Specifies the table from which to retrieve the data.
+    WHERE month = 11 AND year = 2019 AND pickup_zone IN ('Newark Airport', 'SoHo', 'Yorkville East')
+    -- Filters the data to include only trips in November 2019 and where the pickup zone is one of 'Newark Airport', 'SoHo', or 'Yorkville East'.
+)
+
+SELECT DISTINCT 
+    pickup_zone,  -- Selects the pickup zone.
+    dropoff_zone, -- Selects the dropoff zone.
+    trip_duration_p90 -- Selects the 90th percentile of trip duration.
+FROM ranked_data
+WHERE rank = 2;
+-- Filters the result to include only rows where the rank is 2, effectively selecting the second-longest trip duration for each pickup zone.
+```
 
 
 ## Submitting the solutions
