@@ -77,11 +77,11 @@ def web_to_gcs(year, service):
             dtype=taxi_dtypes
         )
 
-        #  # Convert datetime columns
-        # datetime_cols = ['lpep_pickup_datetime', 'lpep_dropoff_datetime']
-        # for col in datetime_cols:
-        #     if col in df.columns:
-        #         df[col] = pd.to_datetime(df[col])
+         # Convert datetime columns
+        datetime_cols = ['lpep_pickup_datetime', 'lpep_dropoff_datetime', 'tpep_pickup_datetime', 'tpep_dropoff_datetime']
+        for col in datetime_cols:
+            if col in df.columns:
+                df[col] = pd.to_datetime(df[col])
 
         # read it back into a parquet file
         file_name = file_name.replace('.csv.gz', '.parquet')

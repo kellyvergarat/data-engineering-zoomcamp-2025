@@ -51,6 +51,15 @@ from {{ source('raw_nyc_tripdata', 'ext_green_taxi' ) }}
 - `select * from dtc_zoomcamp_2025.raw_nyc_tripdata.green_taxi`
 
 Answer:  
+- `select * from myproject.my_nyc_tripdata.ext_green_taxi`
+The database is set using env_var('DBT_BIGQUERY_PROJECT', 'dtc_zoomcamp_2025'), meaning:
+
+If the environment variable DBT_BIGQUERY_PROJECT exists, it takes that value.
+Otherwise, it defaults to "dtc_zoomcamp_2025".
+The schema (dataset) is set using env_var('DBT_BIGQUERY_SOURCE_DATASET', 'raw_nyc_tripdata'), meaning:
+
+If DBT_BIGQUERY_SOURCE_DATASET is set, it takes that value.
+Otherwise, it defaults to "raw_nyc_tripdata".
 
 ### Question 2: dbt Variables & Dynamic Models
 
@@ -73,6 +82,7 @@ What would you change to accomplish that in a such way that command line argumen
 - Update the WHERE clause to `pickup_datetime >= CURRENT_DATE - INTERVAL '{{ var("days_back", env_var("DAYS_BACK", "30")) }}' DAY`
 - Update the WHERE clause to `pickup_datetime >= CURRENT_DATE - INTERVAL '{{ env_var("DAYS_BACK", var("days_back", "30")) }}' DAY`
 
+Answer: - Update the WHERE clause to `pickup_datetime >= CURRENT_DATE - INTERVAL '{{ var("days_back", env_var("DAYS_BACK", "30")) }}' DAY`
 
 ### Question 3: dbt Data Lineage and Execution
 
@@ -88,6 +98,10 @@ Select the option that does **NOT** apply for materializing `fct_taxi_monthly_zo
 - `dbt run --select +models/core/`
 - `dbt run --select models/staging/+`
 
+Answer: - `dbt run --select models/staging/+`
+Runs all models in models/staging/ and their downstream dependencies.
+If fct_taxi_monthly_zone_revenue is in core/ and is not directly downstream from staging/, it will NOT be run.
+Does NOT apply for materializing fct_taxi_monthly_zone_revenue.
 
 ### Question 4: dbt Macros and Jinja
 
@@ -126,6 +140,7 @@ That all being said, regarding macro above, **select all statements that are tru
 - When using `stg`, it materializes in the dataset defined in `DBT_BIGQUERY_STAGING_DATASET`, or defaults to `DBT_BIGQUERY_TARGET_DATASET`
 - When using `staging`, it materializes in the dataset defined in `DBT_BIGQUERY_STAGING_DATASET`, or defaults to `DBT_BIGQUERY_TARGET_DATASET`
 
+Answer: 1, 3, 4, 5
 
 ## Serious SQL
 
@@ -152,6 +167,8 @@ Considering the YoY Growth in 2020, which were the yearly quarters with the best
 - green: {best: 2020/Q1, worst: 2020/Q2}, yellow: {best: 2020/Q2, worst: 2020/Q1}
 - green: {best: 2020/Q1, worst: 2020/Q2}, yellow: {best: 2020/Q1, worst: 2020/Q2}
 - green: {best: 2020/Q1, worst: 2020/Q2}, yellow: {best: 2020/Q3, worst: 2020/Q4}
+
+Answer: green: {best: 2020/Q1, worst: 2020/Q2}, yellow: {best: 2020/Q1, worst: 2020/Q2}
 
 
 ### Question 6: P97/P95/P90 Taxi Monthly Fare
