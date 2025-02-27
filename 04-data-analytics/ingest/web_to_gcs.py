@@ -12,7 +12,7 @@ Pre-reqs:
 """
 
 # services = ['fhv','green','yellow']
-init_url = 'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/'
+#init_url = 'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/'
 # switch out the bucketname
 BUCKET = os.environ.get("GCP_GCS_BUCKET", "bucket-course-project-417213")
 
@@ -48,10 +48,10 @@ def web_to_gcs(year, service):
         # open(file_name, 'wb').write(r.content)
         print(f"Local: {file_name}")
 
-          # Define the schema with correct data types
+        # Define the schema with correct data types
         taxi_dtypes = {
             'VendorID': 'Int64',
-            'passenger_count': 'float64',  # Changed to float64
+            'passenger_count': 'Int64',
             'trip_distance': 'float64',
             'RatecodeID': 'Int64',
             'store_and_fwd_flag': 'str',
@@ -63,8 +63,11 @@ def web_to_gcs(year, service):
             'mta_tax': 'float64',
             'tip_amount': 'float64',
             'tolls_amount': 'float64',
+            'ehail_fee': 'float64',
             'improvement_surcharge': 'float64',
-            'total_amount': 'float64'
+            'total_amount': 'float64',
+            'trip_type': 'Int64',
+            'congestion_surcharge': 'float64'  # This appears in newer data
         }
         
         # Read CSV with specified data types
@@ -75,7 +78,7 @@ def web_to_gcs(year, service):
         )
 
          # Convert datetime columns
-        datetime_cols = ['lpep_pickup_datetime', 'lpep_dropoff_datetime']
+        datetime_cols = ['lpep_pickup_datetime', 'lpep_dropoff_datetime', 'tpep_pickup_datetime', 'tpep_dropoff_datetime']
         for col in datetime_cols:
             if col in df.columns:
                 df[col] = pd.to_datetime(df[col])
@@ -90,7 +93,6 @@ def web_to_gcs(year, service):
         print(f"GCS: {service}/{file_name}")
     
     print("Upload complete")
-
 
 #web_to_gcs('2019', 'green')
 web_to_gcs('2020', 'green')
