@@ -47,7 +47,7 @@ where rn = 1
 --you could build the following piece of code as a macro--
 -- this creates the query to a limit of 100 to make them more efficient--
 -- dbt build --select <model_name> --vars '{'is_test_run': 'false'}'
-{% if var('is_test_run', default=true) %}
+{% if var('is_test_run', default=false) %}
 
   limit 100
 

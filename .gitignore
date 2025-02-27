@@ -14,3 +14,6 @@ ny_taxi_postgres_data/
 data_pgadmin/
 ny_taxi_postgres_data/
 dbt_code
+
+# But allow this specific seed file
+!seeds/taxi_zone_lookup.csv
