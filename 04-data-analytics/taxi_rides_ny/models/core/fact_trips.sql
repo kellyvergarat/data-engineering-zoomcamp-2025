@@ -44,6 +44,11 @@ select trips_unioned.tripid,  -- Unique trip identifier
     dropoff_zone.borough as dropoff_borough,  -- Borough corresponding to the dropoff location
     dropoff_zone.zone as dropoff_zone,  -- Zone corresponding to the dropoff location  
     trips_unioned.pickup_datetime,  -- Timestamp for when the trip started
+     -- Extracting the new time dimensions
+    extract(year from trips_unioned.pickup_datetime) as pickup_year,
+    extract(quarter from trips_unioned.pickup_datetime) as pickup_quarter,
+    concat(extract(year from trips_unioned.pickup_datetime), '/Q', extract(quarter from trips_unioned.pickup_datetime)) as pickup_year_quarter,
+    extract(month from trips_unioned.pickup_datetime) as pickup_month,
     trips_unioned.dropoff_datetime,  -- Timestamp for when the trip ended
     trips_unioned.store_and_fwd_flag,  -- Indicates whether the trip record was stored and forwarded due to connectivity issues
     trips_unioned.passenger_count,  -- Number of passengers in the trip
